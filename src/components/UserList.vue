@@ -52,7 +52,6 @@ import { mapGetters } from "vuex"
 export default {
   name: "UserList",
   data: () => ({
-    isLoading: true,
     addressId: undefined,
   }),
   computed: {
@@ -66,7 +65,7 @@ export default {
     ...mapActions(["fetchData"]),
     openAddress(id) {
       if ( id === this.addressId) {
-        this.addressId = null
+        this.addressId = ''
       } else {
         this.addressId = id
       }
