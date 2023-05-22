@@ -1,90 +1,85 @@
 <template>
   <v-col cols="12" md="4">
-    <v-card max-width="450" class="mx-auto">
+
+    <v-card max-width="450" class="mx-auto" v-if="!isPreloader">
       <v-list three-line>
+        <v-subheader>
+          <p>List</p>
+        </v-subheader>
 
-        <template v-for="(item, index) in users">
-          <v-subheader
-            v-if="item.header"
-            :key="item.header"
-            v-text="item.header"
-          />
+        <v-slide-x-transition group>
+          <div v-for="item in filteredUserList" :key="item.id">
+            <v-list-item>
 
-          <v-divider
-            v-else-if="item.divider"
-            :key="index"
-            :inset="item.inset"
-          />
+              <v-list-item-avatar class="avatar" @click="openAddress(item.id)">
+                <v-img :src="item.avatar"></v-img>
+              </v-list-item-avatar>
 
-          <v-list-item v-else :key="item.title">
+              <v-list-item-content>
+                <v-list-item-title v-html="item.title" />
+                <v-list-item-subtitle v-html="item.subtitle" />
+                <v-list-item-subtitle v-if="isAddressOpen(item.id)" v-html="item.address"/>
+              </v-list-item-content>
 
-            <v-list-item-avatar>
-              <v-img :src="item.avatar"></v-img>
-            </v-list-item-avatar>
+            </v-list-item>
 
-            <v-list-item-content>
-              <v-list-item-title v-html="item.title" />
-              <v-list-item-subtitle v-html="item.subtitle" />
-            </v-list-item-content>
-          </v-list-item>
-
-        </template>
-
+            <v-divider inset :key="item.id" />
+          </div>
+        </v-slide-x-transition>
       </v-list>
     </v-card>
+
+    <!-- Preloader -->
+    <v-layout
+      align-center
+      justify-center
+      column
+      height="200"
+      max-width="450"
+      v-else
+    >
+      <v-flex row align-center>
+        <v-progress-circular indeterminate :size="50" color="primary" />
+      </v-flex>
+    </v-layout>
   </v-col>
 </template>
 
 <script>
+import { mapActions, mapState } from "vuex"
+import { mapGetters } from "vuex"
+
 export default {
   name: "UserList",
-
   data: () => ({
-    users: [
-      { header: "List" },
-      {
-        avatar: "https://cdn.vuetifyjs.com/images/lists/1.jpg",
-        title: "Brunch this weekend?",
-        subtitle: `<span class="text--primary">Ali Connors</span> &mdash; I'll be in your neighborhood doing errands this weekend. Do you want to hang out?`,
-        country: 'USA',
-        score: 20,
-      },
-      { divider: true, inset: true },
-      {
-        avatar: "https://cdn.vuetifyjs.com/images/lists/2.jpg",
-        title: 'Summer BBQ <span class="grey--text text--lighten-1">4</span>',
-        subtitle: `<span class="text--primary">to Alex, Scott, Jennifer</span> &mdash; Wish I could come, but I'm out of town this weekend.`,
-        country: 'Russia',
-        score: 30
-      },
-      { divider: true, inset: true },
-      {
-        avatar: "https://cdn.vuetifyjs.com/images/lists/3.jpg",
-        title: "Oui oui",
-        subtitle:
-          '<span class="text--primary">Sandra Adams</span> &mdash; Do you have Paris recommendations? Have you ever been?',
-        country: 'Russia',
-        score: 10
-      },
-      { divider: true, inset: true },
-      {
-        avatar: "https://cdn.vuetifyjs.com/images/lists/4.jpg",
-        title: "Birthday gift",
-        subtitle:
-          '<span class="text--primary">Trevor Hansen</span> &mdash; Have any ideas about what we should get Heidi for her birthday?',
-        country: 'France',
-        score: 5
-      },
-      { divider: true, inset: true },
-      {
-        avatar: "https://cdn.vuetifyjs.com/images/lists/5.jpg",
-        title: "Recipe to try",
-        subtitle:
-          '<span class="text--primary">Britta Holt</span> &mdash; We should eat this: Grate, Squash, Corn, and tomatillo Tacos.',
-        country: 'China',
-        score: 15
-      },
-    ],
+    isLoading: true,
+    addressId: undefined,
   }),
+  computed: {
+    ...mapState(["isPreloader"]),
+    ...mapGetters(["filteredUserList"]),
+    isAddressOpen() {
+      return (id) =>  this.addressId === id;
+    },
+  },
+  methods: {
+    ...mapActions(["fetchData"]),
+    openAddress(id) {
+      if ( id === this.addressId) {
+        this.addressId = null
+      } else {
+        this.addressId = id
+      }
+    }
+  },
+  async mounted() {
+    this.fetchData()
+  },
 }
 </script>
+
+<style lang="scss" scoped>
+.avatar {
+  cursor: pointer;
+}
+</style>
